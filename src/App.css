@@ -65,7 +65,19 @@
   margin-left: 90%;
   float: right;
 }
-
+.search{
+  margin: 20px;
+  width: 50%;
+}
+.btn-search{
+  background-color: white;
+  border :1px solid black;
+  border-left: none;
+}
+.input-search{
+  border :1px solid black;
+  border-right: none;
+}
 @keyframes App-logo-spin {
   from {
     transform: rotate(0deg);

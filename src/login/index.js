@@ -9,57 +9,60 @@ class Login extends Component {
     }
   }
 
-  signUP =()=> {
-    let data = {}
-    data.username = this.state.username
-    data.password = this.state.password
-     data = JSON.stringify(data)
-    fetch('https://todo-mvc-api-typeorm.herokuapp.com/auth/register', {
+  signUpApi = async (data) =>{
+    const response = await fetch('https://todo-mvc-api-typeorm.herokuapp.com/auth/register', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body:data
+      body: JSON.stringify(data)
     })
-      .then(response => response.json())
-      .then(data => {
-        console.log('Success:', data);
-        if(!data.message) {
-          alert("Đăng ký thành công! Hãy nhấn đăng nhập")
-        this.props.history.push("/");
-        } else alert("Đăng ký thất bại ! Username đã tồn tại")
-
-      })
-      .catch((error) => {
-        console.error('Error:', error);
-      });
+    return response.json()
   }
 
-  signIn =()=> {
+  signUP = async ()=> {
     let data = {}
     data.username = this.state.username
     data.password = this.state.password
-     data = JSON.stringify(data)
-    fetch('https://todo-mvc-api-typeorm.herokuapp.com/auth/login', {
+    const res = await this.signUpApi(data)
+     try {
+       if(res.id){
+         alert("Đăng ký thành công! Hãy nhấn đăng nhập")
+       } else {
+         alert(res.message)
+       }
+     }
+     catch {
+       alert("thất bại")
+     }
+  }
+
+  signInApi = async ( data) => {
+    const response = await fetch('https://todo-mvc-api-typeorm.herokuapp.com/auth/login', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body:data
+      body:JSON.stringify(data)
     })
-      .then(response => {
-        let res = response
-        if(res.status === 201 || res.status === 200) {
-          localStorage.setItem("username" , this.state.username)
+    return response.json()
+  }
+
+  signIn = async ()=> {
+    let data = {}
+    data.username = this.state.username
+    data.password = this.state.password
+    const res = await this.signInApi(data)
+    try{
+      if (res.id) {
         this.props.history.push("/");
-        } else alert("Đăng nhập thất bại !")
-      })
-      .then(data => {
-        console.log('Success:', data);
-      })
-      .catch((error) => {
-        console.error('Error:', error);
-      });
+        localStorage.setItem("token", res.token)
+      } else {
+        alert(res.message)
+      }
+    } catch {
+      alert("Đăng nhập thất bại !")
+    }
   }
 
   handleChange = (event) => {

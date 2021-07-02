@@ -7,7 +7,8 @@ class list extends React.Component {
     this.state = {
       arr: [],
       item: undefined,
-      showForm: false
+      search: '',
+      Authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6Ijk3OTdhYTI4LTBkNjQtNGE2MS05OTllLTkxZDBhN2ZkMTc1MCIsImlhdCI6MTYyNDk0NTg2NywiZXhwIjoxNjI1NTUwNjY3fQ.O9SqJmzOx8wF3HWH_-VX7rlpyk-_GrdmUgZuuZOIHPA'
     }
   }
 
@@ -15,7 +16,7 @@ class list extends React.Component {
     fetch('https://todo-mvc-api-typeorm.herokuapp.com/api/todos', {
       method: 'GET', // or 'PUT'
       headers: {
-        Authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6Ijk3OTdhYTI4LTBkNjQtNGE2MS05OTllLTkxZDBhN2ZkMTc1MCIsImlhdCI6MTYyNDMzNzcyNSwiZXhwIjoxNjI0OTQyNTI1fQ.NBmCaV75x9eLwPQdQj9vZIb4V12tJH6w3_TFSbUZBrA'
+        Authorization: this.state.Authorization
       }
     })
       .then(response => response.json())
@@ -31,7 +32,7 @@ class list extends React.Component {
     fetch('https://todo-mvc-api-typeorm.herokuapp.com/api/todos/' + id, {
       method: 'DELETE',
       headers: {
-        Authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6Ijk3OTdhYTI4LTBkNjQtNGE2MS05OTllLTkxZDBhN2ZkMTc1MCIsImlhdCI6MTYyNDU2NTM1OCwiZXhwIjoxNjI1MTcwMTU4fQ.DuArtUo-2Ja5JOJjlwVbiIlvGv9pSCuKeYp-F4XioJ8'
+        Authorization: this.state.Authorization
       }
     })
       .then(res => {
@@ -39,7 +40,7 @@ class list extends React.Component {
         let index = this.state.arr.findIndex(i => i.id === id)
         this.state.arr.splice(index, 1)
         this.setState({ arr: this.state.arr })
-      }) // or res.json()
+      })
       .then(res => console.log(res))
       .catch((error) => {
         console.error('Error:', error);
@@ -52,7 +53,7 @@ class list extends React.Component {
         method: 'PUT', // or 'PUT'
         headers: {
           'Content-Type': 'application/json',
-          Authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6Ijk3OTdhYTI4LTBkNjQtNGE2MS05OTllLTkxZDBhN2ZkMTc1MCIsImlhdCI6MTYyNDU2NTM1OCwiZXhwIjoxNjI1MTcwMTU4fQ.DuArtUo-2Ja5JOJjlwVbiIlvGv9pSCuKeYp-F4XioJ8'
+          Authorization: this.state.Authorization
         },
         body: JSON.stringify(data)
       })
@@ -74,7 +75,7 @@ class list extends React.Component {
         method: 'POST', // or 'PUT'
         headers: {
           'Content-Type': 'application/json',
-          Authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6Ijk3OTdhYTI4LTBkNjQtNGE2MS05OTllLTkxZDBhN2ZkMTc1MCIsImlhdCI6MTYyNDU2NTM1OCwiZXhwIjoxNjI1MTcwMTU4fQ.DuArtUo-2Ja5JOJjlwVbiIlvGv9pSCuKeYp-F4XioJ8'
+          Authorization: this.state.Authorization
         },
         body: JSON.stringify(data)
       })
@@ -100,15 +101,34 @@ class list extends React.Component {
 
   handleEdit = (item) => {
     this.setState({ item: item })
-    console.log(this.state.item)
   }
 
-  handleLogOut = () =>{
+  handleLogOut = () => {
     localStorage.removeItem("username")
     this.props.history.push("/login")
   }
+
+  updateSearch = () => {
+    this.setState({ arrSearch: this.state.arr })
+  }
+
+  handleSearch = (event) => {
+    this.setState({
+      search: event.target.value
+    })
+  }
+
   render() {
-    if (!localStorage.getItem("username")) {
+    let final = []
+    let newArr = this.state.arr.filter(item => {
+      return item.content.toLowerCase().includes(this.state.search.toLowerCase())
+    });
+    if (this.state.search.length === 0) {
+      final = this.state.arr
+    } else {
+      final = newArr
+    }
+    if (!localStorage.getItem("token")) {
       return (
         <Redirect to="/login" />
       )
@@ -119,6 +139,12 @@ class list extends React.Component {
           <h2 className="title">Render Form Todo-List with Reactjs</h2>
           <button className="btn btn-primary btn-create" onClick={() => this.handleEdit({})}>Create</button>
           {!!this.state.item && <ShowForm item={this.state.item} handleCancel={this.handleCancel} handleSave={this.handleSave} />}
+          <div className="ui search">
+            <div className="ui icon input">
+              <input name="search" type="text" placeholder="Search Content" className="input-search" value={this.state.search} onChange={this.handleSearch} />
+              <button className="btn-search" type="submit"><i className="fa fa-search"></i></button>
+            </div>
+          </div>
           <div className="table-wrapper">
             <table className="table table-bordered">
               <thead>
@@ -132,7 +158,7 @@ class list extends React.Component {
                 </tr>
               </thead>
               <tbody>
-                {this.state.arr.map((item) => {
+                {final.map((item) => {
                   return (
                     <tr key={item.id}>
                       <td>{item.id}</td>
@@ -153,6 +179,7 @@ class list extends React.Component {
                 })}
               </tbody>
             </table>
+            <div>{newArr.length === 0 && "Không tìm thấy item hợp lệ"}</div>
           </div>
         </div>
       )
