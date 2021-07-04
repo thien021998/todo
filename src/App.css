@@ -2,32 +2,6 @@
   text-align: center;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
-}
-
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
-}
-
-.App-link {
-  color: #61dafb;
-}
-
 .form-edit {
   padding: 15px;
   width: auto
@@ -59,31 +33,25 @@
   margin: 20px;
 }
 
-.btn-login{
+.btn-login {
   margin: 30px;
   width: 80px;
   margin-left: 90%;
   float: right;
 }
-.search{
+
+.search {
   margin: 20px;
   width: 50%;
 }
-.btn-search{
+
+.btn-search {
   background-color: white;
-  border :1px solid black;
+  border: 1px solid black;
   border-left: none;
 }
-.input-search{
-  border :1px solid black;
-  border-right: none;
-}
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
 
-  to {
-    transform: rotate(360deg);
-  }
+.input-search {
+  border: 1px solid black;
+  border-right: none;
 }

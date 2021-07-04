@@ -8,23 +8,27 @@ class list extends React.Component {
       arr: [],
       item: undefined,
       search: '',
-      Authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6Ijk3OTdhYTI4LTBkNjQtNGE2MS05OTllLTkxZDBhN2ZkMTc1MCIsImlhdCI6MTYyNDk0NTg2NywiZXhwIjoxNjI1NTUwNjY3fQ.O9SqJmzOx8wF3HWH_-VX7rlpyk-_GrdmUgZuuZOIHPA'
+      Authorization: `Bearer ${localStorage.getItem("token")}`
     }
   }
 
   componentDidMount() {
     fetch('https://todo-mvc-api-typeorm.herokuapp.com/api/todos', {
-      method: 'GET', // or 'PUT'
+      method: 'GET',
       headers: {
         Authorization: this.state.Authorization
       }
     })
       .then(response => response.json())
       .then(data => {
-        this.setState({ arr: data.items })
+        if (data.message) {
+          alert(data.message)
+        } else {
+          this.setState({ arr: data.items })
+        }
       })
       .catch((error) => {
-        console.error('Error:', error);
+        alert(error.message)
       })
   }
 
@@ -41,16 +45,16 @@ class list extends React.Component {
         this.state.arr.splice(index, 1)
         this.setState({ arr: this.state.arr })
       })
-      .then(res => console.log(res))
+      .then(res => res)
       .catch((error) => {
-        console.error('Error:', error);
+        alert(error.message)
       })
   }
 
   handleSave = (data) => {
     if (this.state.item.id) {
       fetch('https://todo-mvc-api-typeorm.herokuapp.com/api/todos/' + this.state.item.id, {
-        method: 'PUT', // or 'PUT'
+        method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
           Authorization: this.state.Authorization
@@ -59,20 +63,24 @@ class list extends React.Component {
       })
         .then(response => response.json())
         .then(data => {
-          const newRecords = this.state.arr.map((record) => {
-            if (record.id === data.id) {
-              record = { ...record, ...data }
-            }
-            return record
-          })
-          this.setState({ arr: newRecords })
+          if (data.message) {
+            alert(data.message)
+          } else {
+            const newRecords = this.state.arr.map((record) => {
+              if (record.id === data.id) {
+                record = { ...record, ...data }
+              }
+              return record
+            })
+            this.setState({ arr: newRecords })
+          }
         })
         .catch((error) => {
-          console.error('Error:', error);
+          alert(error.message)
         });
     } else {
       fetch('https://todo-mvc-api-typeorm.herokuapp.com/api/todos', {
-        method: 'POST', // or 'PUT'
+        method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           Authorization: this.state.Authorization
@@ -81,15 +89,18 @@ class list extends React.Component {
       })
         .then(response => response.json())
         .then(data => {
-          this.setState({
-            arr: [data, ...this.state.arr]
-          })
+          if (data.message) {
+            alert(data.message)
+          } else {
+            this.setState({
+              arr: [data, ...this.state.arr]
+            })
+          }
         })
         .catch((error) => {
-          console.error('Error:', error);
+          alert(error.message)
         });
     }
-
     this.handleCancel()
   }
 
@@ -106,10 +117,6 @@ class list extends React.Component {
   handleLogOut = () => {
     localStorage.removeItem("username")
     this.props.history.push("/login")
-  }
-
-  updateSearch = () => {
-    this.setState({ arrSearch: this.state.arr })
   }
 
   handleSearch = (event) => {
