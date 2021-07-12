@@ -74,8 +74,7 @@ class Login extends Component {
   render() {
     return (
       <div className="form">
-        <form className="align">
-
+        <div className="align">
           <div className="mb-3">
             <label className="form-label text-start d-block">Username :</label>
             <input name="username" type="text" className="form-control" value={this.state.username} onChange={this.handleChange} />
@@ -85,8 +84,7 @@ class Login extends Component {
             <label className="form-label  text-start d-block">Password :</label>
             <input name="password" type="password" className="form-control" value={this.state.password} onChange={this.handleChange} />
           </div>
-
-        </form>
+          </div>
         <button type="submit" className="btn btn-info align" onClick={this.signUP}><b>Sign up</b></button>
         <button type="submit" className="btn btn-primary align" onClick={this.logIn}><b>Log In</b></button>
       </div>
