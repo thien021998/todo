@@ -1,137 +1,136 @@
-import React from 'react'
+/* eslint-disable react-hooks/rules-of-hooks */
+import React, { useState, useEffect} from 'react'
 import ShowForm from './ShowForm'
 import { Redirect } from 'react-router-dom'
-class list extends React.Component {
-  constructor(props) {
-    super(props)
-    this.state = {
-      arr: [],
-      item: undefined,
-      search: '',
-      Authorization: `Bearer ${localStorage.getItem("token")}`
-    }
-  }
 
-  componentDidMount() {
-    fetch('https://todo-mvc-api-typeorm.herokuapp.com/api/todos', {
-      method: 'GET',
-      headers: {
-        Authorization: this.state.Authorization
-      }
-    })
-      .then(response => response.json())
-      .then(data => {
+  const list = (props) => {
+
+    const [arr, setArr] = useState([])
+    const [item, setItem] = useState(undefined)
+    const [search, setSearch] = useState('')
+    const [Authorization] = useState(`Bearer ${localStorage.getItem("token")}`)
+
+  useEffect (() => {
+    const fetchApi = async () =>{
+      const data = await apiGetAll()
+      try {
         if (data.message) {
           alert(data.message)
         } else {
-          this.setState({ arr: data.items })
+          setArr(data.items)
         }
-      })
-      .catch((error) => {
-        alert(error.message)
-      })
+      } catch {
+        alert(data.error)
+      }
+    }
+    fetchApi()
+  });
+
+  const apiGetAll = async () => {
+    const response = await fetch('https://todo-mvc-api-typeorm.herokuapp.com/api/todos', {
+      method: 'GET',
+      headers: {
+        Authorization: Authorization
+      },
+    })
+    return response.json()
   }
 
-  deleteItems = (id) => {
-    fetch('https://todo-mvc-api-typeorm.herokuapp.com/api/todos/' + id, {
+  const apiDelete = async (id) => {
+    const response = await fetch('https://todo-mvc-api-typeorm.herokuapp.com/api/todos/' + id, {
       method: 'DELETE',
       headers: {
-        Authorization: this.state.Authorization
-      }
+        Authorization: Authorization
+      },
     })
-      .then(res => {
-        res.text();
-        let index = this.state.arr.findIndex(i => i.id === id)
-        this.state.arr.splice(index, 1)
-        this.setState({ arr: this.state.arr })
-      })
-      .then(res => res)
-      .catch((error) => {
-        alert(error.message)
-      })
+    return response.json()
   }
 
-  handleSave = (data) => {
-    if (this.state.item.id) {
-      fetch('https://todo-mvc-api-typeorm.herokuapp.com/api/todos/' + this.state.item.id, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: this.state.Authorization
-        },
-        body: JSON.stringify(data)
-      })
-        .then(response => response.json())
-        .then(data => {
-          if (data.message) {
-            alert(data.message)
-          } else {
-            const newRecords = this.state.arr.map((record) => {
-              if (record.id === data.id) {
-                record = { ...record, ...data }
-              }
-              return record
-            })
-            this.setState({ arr: newRecords })
-          }
-        })
-        .catch((error) => {
-          alert(error.message)
-        });
-    } else {
-      fetch('https://todo-mvc-api-typeorm.herokuapp.com/api/todos', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: this.state.Authorization
-        },
-        body: JSON.stringify(data)
-      })
-        .then(response => response.json())
-        .then(data => {
-          if (data.message) {
-            alert(data.message)
-          } else {
-            this.setState({
-              arr: [data, ...this.state.arr]
-            })
-          }
-        })
-        .catch((error) => {
-          alert(error.message)
-        });
+  const apiUpdate = async (data) => {
+    const response = await fetch('https://todo-mvc-api-typeorm.herokuapp.com/api/todos/' + item.id, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: Authorization
+      },
+      body: JSON.stringify(data)
+    })
+    return response.json()
+  }
+
+  const apiCreate = async (data) => {
+    const response = await fetch('https://todo-mvc-api-typeorm.herokuapp.com/api/todos', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: Authorization
+      },
+      body: JSON.stringify(data)
+    })
+    return response.json()
+  }
+
+  const deleteItems = async (id) => {
+    try {
+      const arr = await apiDelete(id)
+      console.log(arr)
+    } catch {
+      let index = arr.findIndex(i => i.id === id)
+        arr.splice(index, 1)
+        setArr(arr)
     }
-    this.handleCancel()
   }
 
-  handleCancel = () => {
-    this.setState({
-      item: undefined
-    })
+  const handleSave = async (data) => {
+    let items
+    if (item.id) {
+      items = await apiUpdate(data)
+      if(items.id){
+          const newRecords = arr.map((record) => {
+            if (record.id === data.id) {
+              record = { ...record, ...data }
+            }
+            return record
+          })
+          setArr(newRecords)
+      }
+    } else {
+      items = await apiCreate(data)
+        if (items.id) {
+          setArr([items,...arr])
+        }
+    }
+
+    if (items.message) {
+      alert(items.message)
+    } else {
+      handleCancel()
+    }
   }
 
-  handleEdit = (item) => {
-    this.setState({ item: item })
+  const handleCancel = () => {
+    setItem(undefined)
   }
 
-  handleLogOut = () => {
-    localStorage.removeItem("username")
-    this.props.history.push("/login")
+  const handleEdit = (item) => {
+    setItem(item)
   }
 
-  handleSearch = (event) => {
-    this.setState({
-      search: event.target.value
-    })
+  const handleLogOut = () => {
+    localStorage.removeItem("token")
+    props.history.push("/login")
   }
 
-  render() {
+  const handleSearch = (event) => {
+    setSearch(event.target.value)
+  }
+
     let final = []
-    let newArr = this.state.arr.filter(item => {
-      return item.content.toLowerCase().includes(this.state.search.toLowerCase())
+    let newArr = arr.filter(item => {
+      return item.content.toLowerCase().includes(search.toLowerCase())
     });
-    if (this.state.search.length === 0) {
-      final = this.state.arr
+    if (search.length === 0) {
+      final = arr
     } else {
       final = newArr
     }
@@ -142,13 +141,13 @@ class list extends React.Component {
     } else {
       return (
         <div className="row">
-          <button className="btn btn-warning btn-login" onClick={this.handleLogOut}>logout</button>
+          <button className="btn btn-warning btn-login" onClick={handleLogOut}>logout</button>
           <h2 className="title">Render Form Todo-List with Reactjs</h2>
-          <button className="btn btn-primary btn-create" onClick={() => this.handleEdit({})}>Create</button>
-          {!!this.state.item && <ShowForm item={this.state.item} handleCancel={this.handleCancel} handleSave={this.handleSave} />}
+          <button className="btn btn-primary btn-create" onClick={() => handleEdit({})}>Create</button>
+          {!!item && <ShowForm item={item} handleCancel={handleCancel} handleSave={handleSave} />}
           <div className="ui search">
             <div className="ui icon input">
-              <input name="search" type="text" placeholder="Search Content" className="input-search" value={this.state.search} onChange={this.handleSearch} />
+              <input name="search" type="text" placeholder="Search Content" className="input-search" value={search} onChange={handleSearch} />
               <button className="btn-search" type="submit"><i className="fa fa-search"></i></button>
             </div>
           </div>
@@ -174,10 +173,10 @@ class list extends React.Component {
                       <td>{item.created_at.split("T", 1)}</td>
                       <td>{item.updated_at.split("T", 1)}</td>
                       <td>
-                        <button className="btn btn-warning" onClick={() => this.handleEdit(item)}>
+                        <button className="btn btn-warning" onClick={() => handleEdit(item)}>
                           Edit
                         </button>
-                        <button className="btn btn-primary" onClick={() => (this.deleteItems(item.id))}>
+                        <button className="btn btn-primary" onClick={() => (deleteItems(item.id))}>
                           Delete
                         </button>
                       </td>
@@ -191,7 +190,6 @@ class list extends React.Component {
         </div>
       )
     }
-  }
 }
 
 export default list
