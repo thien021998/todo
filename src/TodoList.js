@@ -208,8 +208,11 @@ import { Redirect } from 'react-router-dom'
                   return (
                     <tr key={item.id}>
                       <td>{item.id}</td>
-                      <td onDoubleClick={()=>hanleInput(item)}>{input === undefined ? item.content :
-                       <> <input type="text" value ={input} onChange={updateInput}/> <button onClick={save}>save</button></>
+                      <td onDoubleClick={()=>hanleInput(item)}>{input && itemInput.id === item.id ?
+                       <>
+                       <input type="text" value ={input} onChange={updateInput}/>
+                       <button onClick={save}>save</button>
+                       </> : item.content
                       }</td>
                       <td>{item.status}</td>
                       <td>{item.created_at.split("T", 1)}</td>
