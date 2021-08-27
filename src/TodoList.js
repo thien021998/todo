@@ -9,7 +9,6 @@ import { Redirect } from 'react-router-dom'
     const [item, setItem] = useState(undefined)
     const [search, setSearch] = useState('')
     const [Authorization] = useState(`Bearer ${localStorage.getItem("token")}`)
-    const [input, setInput] = useState(undefined)
     const [itemInput,setItemInput] = useState(undefined)
 
   useEffect (() => {
@@ -141,28 +140,23 @@ import { Redirect } from 'react-router-dom'
     setSearch(event.target.value)
   }
 
-  const hanleInput = (data) => {
-    setItemInput(data)
-    setInput(data.content)
-  }
-
   const updateInput = (e) => {
-    setInput(e.target.value)
+    itemInput.content = e.target.value
+    setItemInput(itemInput)
   }
 
   const save = async () => {
-    let data = { content : input}
-    let items = await apiUpdateInput(data)
-      if(items.id){
+    let data = { content : itemInput.content}
+    let item = await apiUpdateInput(data)
+      if(item.id){
           const newRecords = arr.map((record) => {
-            if (record.id === data.id) {
-              record = { ...record, ...data }
+            if (record.id === itemInput.id) {
+              record = { ...record, ...item }
             }
             return record
           })
           setArr(newRecords)
       }
-    setInput(undefined)
     setItemInput(undefined)
   }
     let final = []
@@ -208,9 +202,9 @@ import { Redirect } from 'react-router-dom'
                   return (
                     <tr key={item.id}>
                       <td>{item.id}</td>
-                      <td onDoubleClick={()=>hanleInput(item)}>{input && itemInput.id === item.id ?
+                      <td onDoubleClick={()=>setItemInput(item)}>{itemInput && itemInput.id === item.id ?
                        <>
-                       <input type="text" value ={input} onChange={updateInput}/>
+                       <input type="text" value ={itemInput.content} onChange={updateInput}/>
                        <button onClick={save}>save</button>
                        </> : item.content
                       }</td>
