@@ -9,6 +9,8 @@ import { Redirect } from 'react-router-dom'
     const [item, setItem] = useState(undefined)
     const [search, setSearch] = useState('')
     const [Authorization] = useState(`Bearer ${localStorage.getItem("token")}`)
+    const [input, setInput] = useState(undefined)
+    const [itemInput,setItemInput] = useState(undefined)
 
   useEffect (() => {
     const fetchApi = async () =>{
@@ -58,6 +60,18 @@ import { Redirect } from 'react-router-dom'
     return response.json()
   }
 
+  const apiUpdateInput = async (data) => {
+    const response = await fetch('https://todo-mvc-api-typeorm.herokuapp.com/api/todos/' +itemInput.id, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: Authorization
+      },
+      body: JSON.stringify(data)
+    })
+    return response.json()
+  }
+
   const apiCreate = async (data) => {
     const response = await fetch('https://todo-mvc-api-typeorm.herokuapp.com/api/todos', {
       method: 'POST',
@@ -82,10 +96,12 @@ import { Redirect } from 'react-router-dom'
   }
 
   const handleSave = async (data) => {
+    console.log(data)
     let items
     if (item.id) {
       items = await apiUpdate(data)
       if(items.id){
+        console.log(data.id)
           const newRecords = arr.map((record) => {
             if (record.id === data.id) {
               record = { ...record, ...data }
@@ -125,6 +141,30 @@ import { Redirect } from 'react-router-dom'
     setSearch(event.target.value)
   }
 
+  const hanleInput = (data) => {
+    setItemInput(data)
+    setInput(data.content)
+  }
+
+  const updateInput = (e) => {
+    setInput(e.target.value)
+  }
+
+  const save = async () => {
+    let data = { content : input}
+    let items = await apiUpdateInput(data)
+      if(items.id){
+          const newRecords = arr.map((record) => {
+            if (record.id === data.id) {
+              record = { ...record, ...data }
+            }
+            return record
+          })
+          setArr(newRecords)
+      }
+    setInput(undefined)
+    setItemInput(undefined)
+  }
     let final = []
     let newArr = arr.filter(item => {
       return item.content.toLowerCase().includes(search.toLowerCase())
@@ -168,7 +208,9 @@ import { Redirect } from 'react-router-dom'
                   return (
                     <tr key={item.id}>
                       <td>{item.id}</td>
-                      <td>{item.content}</td>
+                      <td onDoubleClick={()=>hanleInput(item)}>{input === undefined ? item.content :
+                       <> <input type="text" value ={input} onChange={updateInput}/> <button onClick={save}>save</button></>
+                      }</td>
                       <td>{item.status}</td>
                       <td>{item.created_at.split("T", 1)}</td>
                       <td>{item.updated_at.split("T", 1)}</td>
