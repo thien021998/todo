@@ -52,8 +52,8 @@ const Login = (props) => {
       const res = await apiLogIn(data)
       console.log(res)
       if (res.id) {
-        props.history.push('/');
         localStorage.setItem("token", res.token)
+        props.history.push('/');
       } else {
         alert(res.message)
       }

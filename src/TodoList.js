@@ -5,10 +5,11 @@ import { Redirect } from 'react-router-dom'
 
   const list = (props) => {
 
+    let Authorization = `Bearer ${localStorage.getItem("token")}`
+
     const [arr, setArr] = useState([])
     const [item, setItem] = useState(undefined)
     const [search, setSearch] = useState('')
-    const [Authorization] = useState(`Bearer ${localStorage.getItem("token")}`)
     const [itemInput,setItemInput] = useState(undefined)
 
   useEffect (() => {
@@ -159,6 +160,7 @@ import { Redirect } from 'react-router-dom'
       }
     setItemInput(undefined)
   }
+
     let final = []
     let newArr = arr.filter(item => {
       return item.content.toLowerCase().includes(search.toLowerCase())
