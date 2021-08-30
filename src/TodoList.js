@@ -1,16 +1,68 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable react-hooks/rules-of-hooks */
-import React, { useState, useEffect} from 'react'
+import React, { useState, useEffect, useCallback, useMemo} from 'react'
 import ShowForm from './ShowForm'
 import { Redirect } from 'react-router-dom'
 
   const list = (props) => {
 
+    let final = []
     let Authorization = `Bearer ${localStorage.getItem("token")}`
 
     const [arr, setArr] = useState([])
     const [item, setItem] = useState(undefined)
     const [search, setSearch] = useState('')
     const [itemInput,setItemInput] = useState(undefined)
+
+    const apiGetAll = useCallback(
+      async () => {
+        const response = await fetch('https://todo-mvc-api-typeorm.herokuapp.com/api/todos', {
+        method: 'GET',
+        headers: {
+          Authorization: Authorization
+        },
+      })
+      return response.json()
+      },
+      [Authorization],
+    )
+
+    const handleSave = useCallback(
+      async (data) =>{
+        let items
+      if (item.id) {
+        items = await apiUpdate(data)
+        if (items.id) {
+          const newRecords = arr.map((record) => {
+            if (record.id === items.id) {
+              record = { ...record, ...items }
+            }
+            return record
+          })
+          setArr(newRecords)
+        }
+      } else {
+        items = await apiCreate(data)
+        if (items.id) {
+          setArr([items, ...arr])
+        }
+      }
+
+      if (items.message) {
+        alert(items.message)
+      } else {
+        handleCancel()
+      }
+      },
+      [item]
+    )
+
+    const handleCancel = useCallback(
+      () =>{
+        setItem(undefined)
+      },
+      [item]
+    )
 
   useEffect (() => {
     const fetchApi = async () =>{
@@ -26,17 +78,7 @@ import { Redirect } from 'react-router-dom'
       }
     }
     fetchApi()
-  });
-
-  const apiGetAll = async () => {
-    const response = await fetch('https://todo-mvc-api-typeorm.herokuapp.com/api/todos', {
-      method: 'GET',
-      headers: {
-        Authorization: Authorization
-      },
-    })
-    return response.json()
-  }
+  },[apiGetAll]);
 
   const apiDelete = async (id) => {
     const response = await fetch('https://todo-mvc-api-typeorm.herokuapp.com/api/todos/' + id, {
@@ -91,41 +133,8 @@ import { Redirect } from 'react-router-dom'
     } catch {
       let index = arr.findIndex(i => i.id === id)
         arr.splice(index, 1)
-        setArr(arr)
+        setArr([...arr])
     }
-  }
-
-  const handleSave = async (data) => {
-    console.log(data)
-    let items
-    if (item.id) {
-      items = await apiUpdate(data)
-      if(items.id){
-        console.log(data.id)
-          const newRecords = arr.map((record) => {
-            if (record.id === data.id) {
-              record = { ...record, ...data }
-            }
-            return record
-          })
-          setArr(newRecords)
-      }
-    } else {
-      items = await apiCreate(data)
-        if (items.id) {
-          setArr([items,...arr])
-        }
-    }
-
-    if (items.message) {
-      alert(items.message)
-    } else {
-      handleCancel()
-    }
-  }
-
-  const handleCancel = () => {
-    setItem(undefined)
   }
 
   const handleEdit = (item) => {
@@ -142,8 +151,7 @@ import { Redirect } from 'react-router-dom'
   }
 
   const updateInput = (e) => {
-    itemInput.content = e.target.value
-    setItemInput(itemInput)
+    setItemInput({...itemInput, content: e.target.value})
   }
 
   const save = async () => {
@@ -157,18 +165,23 @@ import { Redirect } from 'react-router-dom'
             return record
           })
           setArr(newRecords)
+          setItemInput(undefined)
       }
-    setItemInput(undefined)
   }
 
-    let final = []
+  const getFilterArr = (search) => {
     let newArr = arr.filter(item => {
       return item.content.toLowerCase().includes(search.toLowerCase())
     });
+    return newArr
+  }
+
+  const filterArr = useMemo(()=>getFilterArr(search),[search])
+
     if (search.length === 0) {
       final = arr
     } else {
-      final = newArr
+      final = filterArr
     }
     if (!localStorage.getItem("token")) {
       return (
@@ -226,7 +239,7 @@ import { Redirect } from 'react-router-dom'
                 })}
               </tbody>
             </table>
-            <div>{newArr.length === 0 && "Không tìm thấy item hợp lệ"}</div>
+            <div>{final.length === 0 && "Không tìm thấy item hợp lệ"}</div>
           </div>
         </div>
       )
