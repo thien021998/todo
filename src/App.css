@@ -1,0 +1,57 @@
+.App {
+  text-align: center;
+}
+
+.form-edit {
+  padding: 15px;
+  width: auto
+}
+
+.table {
+  border-collapse: collapse;
+  border: 1px solid fff;
+}
+
+.table-wrapper {
+  max-height: 70vh;
+  overflow-y: auto;
+  position: relative;
+}
+
+.table-wrapper th {
+  top: 0;
+  position: sticky;
+  background: #fff;
+}
+
+.btn {
+  margin: 0 10px;
+}
+
+.btn-create {
+  width: 80px;
+  margin: 20px;
+}
+
+.btn-login {
+  margin: 30px;
+  width: 80px;
+  margin-left: 90%;
+  float: right;
+}
+
+.search {
+  margin: 20px;
+  width: 50%;
+}
+
+.btn-search {
+  background-color: white;
+  border: 1px solid black;
+  border-left: none;
+}
+
+.input-search {
+  border: 1px solid black;
+  border-right: none;
+}
