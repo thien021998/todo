@@ -1,16 +1,19 @@
-import React, { useState } from 'react';
+/* eslint-disable react-hooks/exhaustive-deps */
+import React, { useCallback, useState } from 'react';
 
-  const ShowForm = (props) => {
-    const [content, setContent] = useState([props.item.content || ''])
+const ShowForm = (props) => {
+
+  const [content, setContent] = useState('')
 
   const handleChange = (event) =>{
     setContent(event.target.value)
   }
 
-  const handleOnSave = () => {
-    const {handleSave} = props
-    handleSave({content : content})
-  }
+  const handleOnSave = useCallback(
+    () => {
+      const {handleSave} = props
+      handleSave({content : content})
+  },[content])
 
   const { handleCancel } = props
 

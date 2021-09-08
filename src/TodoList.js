@@ -1,72 +1,20 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable react-hooks/rules-of-hooks */
-import React, { useState, useEffect, useCallback, useMemo} from 'react'
+import React, { useState, useEffect, useCallback, useMemo } from 'react'
 import ShowForm from './ShowForm'
 import { Redirect } from 'react-router-dom'
+import TodoApi from './api/TodoApi'
 
-  const list = (props) => {
+const list = (props) => {
 
-    let final = []
-    let Authorization = `Bearer ${localStorage.getItem("token")}`
+  const [arr, setArr] = useState([])
+  const [item, setItem] = useState(undefined)
+  const [search, setSearch] = useState('')
+  const [itemInput, setItemInput] = useState(undefined)
 
-    const [arr, setArr] = useState([])
-    const [item, setItem] = useState(undefined)
-    const [search, setSearch] = useState('')
-    const [itemInput,setItemInput] = useState(undefined)
-
-    const apiGetAll = useCallback(
-      async () => {
-        const response = await fetch('https://todo-mvc-api-typeorm.herokuapp.com/api/todos', {
-        method: 'GET',
-        headers: {
-          Authorization: Authorization
-        },
-      })
-      return response.json()
-      },
-      [Authorization],
-    )
-
-    const handleSave = useCallback(
-      async (data) =>{
-        let items
-      if (item.id) {
-        items = await apiUpdate(data)
-        if (items.id) {
-          const newRecords = arr.map((record) => {
-            if (record.id === items.id) {
-              record = { ...record, ...items }
-            }
-            return record
-          })
-          setArr(newRecords)
-        }
-      } else {
-        items = await apiCreate(data)
-        if (items.id) {
-          setArr([items, ...arr])
-        }
-      }
-
-      if (items.message) {
-        alert(items.message)
-      } else {
-        handleCancel()
-      }
-      },
-      [item]
-    )
-
-    const handleCancel = useCallback(
-      () =>{
-        setItem(undefined)
-      },
-      [item]
-    )
-
-  useEffect (() => {
-    const fetchApi = async () =>{
-      const data = await apiGetAll()
+  useEffect(() => {
+    const fetchApi = async () => {
+      const data = await TodoApi.getAll()
       try {
         if (data.message) {
           alert(data.message)
@@ -78,172 +26,175 @@ import { Redirect } from 'react-router-dom'
       }
     }
     fetchApi()
-  },[apiGetAll]);
+  }, []);
 
-  const apiDelete = async (id) => {
-    const response = await fetch('https://todo-mvc-api-typeorm.herokuapp.com/api/todos/' + id, {
-      method: 'DELETE',
-      headers: {
-        Authorization: Authorization
-      },
-    })
-    return response.json()
-  }
+  const handleSave = useCallback(
+    async (data) => {
+      let item
+      // nếu tồn tại itemInput thì call Api update
+      // nếu ko có itemInput thì call Api create
+      if (itemInput) {
+        item = await TodoApi.update(itemInput.id, itemInput.content)
+        if (item.id) {
+          const newRecords = arr.map((record) => {
+            if (record.id === item.id) {
+              record = { ...record, ...item }
+            }
+            return record
+          })
+          setArr(newRecords)
+        }
+      } else {
+        item = await TodoApi.create(data)
+        if (item.id) {
+          setArr([item, ...arr])
+        }
+      }
 
-  const apiUpdate = async (data) => {
-    const response = await fetch('https://todo-mvc-api-typeorm.herokuapp.com/api/todos/' + item.id, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: Authorization
-      },
-      body: JSON.stringify(data)
-    })
-    return response.json()
-  }
+      if (item.message) {
+        alert(item.message)
+      } else {
+        handleCancel()
+      }
+    },
+    [item || itemInput]
+  )
 
-  const apiUpdateInput = async (data) => {
-    const response = await fetch('https://todo-mvc-api-typeorm.herokuapp.com/api/todos/' +itemInput.id, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: Authorization
-      },
-      body: JSON.stringify(data)
-    })
-    return response.json()
-  }
+  const handleCancel = useCallback(
+    () => {
+      if (item) {
+        setItem(undefined)
+      } else {
+        setItemInput(undefined)
+      }
+    },
+    []
+  )
 
-  const apiCreate = async (data) => {
-    const response = await fetch('https://todo-mvc-api-typeorm.herokuapp.com/api/todos', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: Authorization
-      },
-      body: JSON.stringify(data)
-    })
-    return response.json()
-  }
-
-  const deleteItems = async (id) => {
+  const deleteItem = async (id) => {
     try {
-      const arr = await apiDelete(id)
+      const arr = await TodoApi.delete(id)
       console.log(arr)
     } catch {
       let index = arr.findIndex(i => i.id === id)
-        arr.splice(index, 1)
-        setArr([...arr])
+      arr.splice(index, 1)
+      setArr([...arr])
     }
   }
 
-  const handleEdit = (item) => {
+  const handleCreate = (item) => {
     setItem(item)
   }
 
-  const handleLogOut = () => {
+  const handleLogOut = useCallback(() => {
     localStorage.removeItem("token")
     props.history.push("/login")
-  }
+  }, [])
 
   const handleSearch = (event) => {
     setSearch(event.target.value)
   }
 
   const updateInput = (e) => {
-    setItemInput({...itemInput, content: e.target.value})
+    setItemInput({ ...itemInput, content: e.target.value })
   }
 
-  const save = async () => {
-    let data = { content : itemInput.content}
-    let item = await apiUpdateInput(data)
-      if(item.id){
-          const newRecords = arr.map((record) => {
-            if (record.id === itemInput.id) {
-              record = { ...record, ...item }
-            }
-            return record
-          })
-          setArr(newRecords)
-          setItemInput(undefined)
-      }
-  }
-
-  const getFilterArr = (search) => {
-    let newArr = arr.filter(item => {
-      return item.content.toLowerCase().includes(search.toLowerCase())
-    });
-    return newArr
-  }
-
-  const filterArr = useMemo(()=>getFilterArr(search),[search])
-
+  const TodoItems = useMemo(() => {
     if (search.length === 0) {
-      final = arr
+      if (arr) {
+        // format ngày của mảng
+        let newArr = arr.map(item => {
+          let date = {
+            ...item,
+            created_at: item.created_at.split("T", 1),
+            updated_at: item.updated_at.split("T", 1)
+          }
+
+          return date
+        })
+
+        return newArr
+      }
     } else {
-      final = filterArr
+      // tìm kiếm theo key Search
+      let newArr = arr.filter(item => {
+        return item.content.toLowerCase().includes(search.toLowerCase())
+      });
+      // format ngày của mảng sau khi tìm kiếm
+      let filtersItem = newArr.map(item => {
+        let date = {
+          ...item,
+          created_at: item.created_at.split("T", 1),
+          updated_at: item.updated_at.split("T", 1)
+        }
+        return date
+      })
+
+      return filtersItem
     }
-    if (!localStorage.getItem("token")) {
-      return (
-        <Redirect to="/login" />
-      )
-    } else {
-      return (
-        <div className="row">
-          <button className="btn btn-warning btn-login" onClick={handleLogOut}>logout</button>
-          <h2 className="title">Render Form Todo-List with Reactjs</h2>
-          <button className="btn btn-primary btn-create" onClick={() => handleEdit({})}>Create</button>
-          {!!item && <ShowForm item={item} handleCancel={handleCancel} handleSave={handleSave} />}
-          <div className="ui search">
-            <div className="ui icon input">
-              <input name="search" type="text" placeholder="Search Content" className="input-search" value={search} onChange={handleSearch} />
-              <button className="btn-search" type="submit"><i className="fa fa-search"></i></button>
-            </div>
-          </div>
-          <div className="table-wrapper">
-            <table className="table table-bordered">
-              <thead>
-                <tr>
-                  <th>Index</th>
-                  <th>Content</th>
-                  <th>Status</th>
-                  <th>Create-date</th>
-                  <th>Update-date</th>
-                  <th>Action</th>
-                </tr>
-              </thead>
-              <tbody>
-                {final.map((item) => {
-                  return (
-                    <tr key={item.id}>
-                      <td>{item.id}</td>
-                      <td onDoubleClick={()=>setItemInput(item)}>{itemInput && itemInput.id === item.id ?
-                       <>
-                       <input type="text" value ={itemInput.content} onChange={updateInput}/>
-                       <button onClick={save}>save</button>
-                       </> : item.content
-                      }</td>
-                      <td>{item.status}</td>
-                      <td>{item.created_at.split("T", 1)}</td>
-                      <td>{item.updated_at.split("T", 1)}</td>
-                      <td>
-                        <button className="btn btn-warning" onClick={() => handleEdit(item)}>
-                          Edit
-                        </button>
-                        <button className="btn btn-primary" onClick={() => (deleteItems(item.id))}>
-                          Delete
-                        </button>
-                      </td>
-                    </tr>
-                  )
-                })}
-              </tbody>
-            </table>
-            <div>{final.length === 0 && "Không tìm thấy item hợp lệ"}</div>
+  }, [arr, search])
+
+  if (!localStorage.getItem("token")) {
+    return (
+      <Redirect to="/login" />
+    )
+  } else {
+    return (
+      <div className="row">
+        <button className="btn btn-warning btn-login" onClick={handleLogOut}>logout</button>
+        <h2 className="title">Render Form Todo-List with Reactjs</h2>
+        <button className="btn btn-primary btn-create" onClick={() => handleCreate({})}>Create</button>
+        {!!item && <ShowForm item={item} handleCancel={handleCancel} handleSave={handleSave} />}
+        <div className="ui search">
+          <div className="ui icon input">
+            <input name="search" type="text" placeholder="Search Content" className="input-search" value={search} onChange={handleSearch} />
+            <button className="btn-search" type="submit"><i className="fa fa-search"></i></button>
           </div>
         </div>
-      )
-    }
+        <div className="table-wrapper">
+          <table className="table table-bordered">
+            <thead>
+              <tr>
+                <th>Index</th>
+                <th>Content</th>
+                <th>Status</th>
+                <th>Create-date</th>
+                <th>Update-date</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {TodoItems.map((item) => {
+                return (
+                  <tr key={item.id}>
+                    <td>{item.id}</td>
+                    <td onDoubleClick={() => setItemInput(item)}>{itemInput && itemInput.id === item.id ?
+                      <>
+                        <input type="text" value={itemInput.content} onChange={updateInput} />
+                        <button onClick={handleSave}>save</button>
+                      </> : item.content
+                    }</td>
+                    <td>{item.status}</td>
+                    <td>{item.created_at}</td>
+                    <td>{item.updated_at}</td>
+                    <td>
+                      <button className="btn btn-warning" onClick={() => setItemInput(item)}>
+                        Edit
+                      </button>
+                      <button className="btn btn-primary" onClick={() => (deleteItem(item.id))}>
+                        Delete
+                      </button>
+                    </td>
+                  </tr>
+                )
+              })}
+            </tbody>
+          </table>
+          <div>{TodoItems.length === 0 && "Không tìm thấy item hợp lệ"}</div>
+        </div>
+      </div>
+    )
+  }
 }
 
 export default list
