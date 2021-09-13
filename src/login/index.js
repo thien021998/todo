@@ -1,11 +1,15 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useContext, useState } from 'react';
+import { useHistory } from 'react-router';
 import TodoApi from '../api/TodoApi';
+import AuthContext from '../AuthContext';
 import './style.css'
 
 const Login = (props) => {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
+  const history = useHistory()
+  const {updateToken} = useContext(AuthContext)
 
   const signUP = useCallback(
     async () => {
@@ -24,7 +28,6 @@ const Login = (props) => {
         alert("Đăng ký thất bại")
       }
     }, [username, password])
-
   const logIn = useCallback(
     async () => {
       let data = {}
@@ -35,7 +38,8 @@ const Login = (props) => {
         console.log(res)
         if (res.id) {
           localStorage.setItem("token", res.token)
-          props.history.push('/');
+          updateToken()
+          history.push('/');
         } else {
           alert(res.message)
         }

@@ -1,19 +1,19 @@
 class TodoApi {
   url = 'https://todo-mvc-api-typeorm.herokuapp.com/api/todos'
-  authorization = `Bearer ${localStorage.getItem("token")}`
+  // authorization = `Bearer ${localStorage.getItem("token")}`
 
-  getAll = async (authorization) => {
+  getAll = async (token) => {
     const response = await fetch (this.url,{
       method: 'GET',
         headers: {
-          Authorization: this.authorization
+          Authorization: `Bearer ${token}`
         },
     })
 
     return response.json()
   }
 
-  update = async (id,data) => {
+  update = async (id,data,token) => {
     let item = {
       content : data
     }
@@ -21,7 +21,7 @@ class TodoApi {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: this.authorization
+        Authorization: `Bearer ${token}`
       },
       body: JSON.stringify(item)
     })
@@ -29,12 +29,12 @@ class TodoApi {
     return response.json()
   }
 
-  create = async (data) => {
+  create = async (data,token) => {
     const response = await fetch(this.url,{
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: this.authorization
+        Authorization: `Bearer ${token}`
       },
       body: JSON.stringify(data)
     })
@@ -42,11 +42,11 @@ class TodoApi {
     return response.json()
   }
 
-  delete = async (id) => {
+  delete = async (id,token) => {
     const response = await fetch (`${this.url}/${id}`,{
       method: 'DELETE',
       headers: {
-        Authorization: this.authorization
+        Authorization: `Bearer ${token}`
       },
     })
 

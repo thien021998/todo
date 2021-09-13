@@ -1,20 +1,24 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 
 import './App.css';
-import TodoList from './TodoList'
-import React from 'react'
-import Login from './login'
-import {BrowserRouter as Router , Route  } from 'react-router-dom'
+import React, { useCallback, useState }  from 'react'
+import TodoRouter from './TodoRouter';
+import AuthContext from './AuthContext';
 
 const App = () =>{
+  const [token ,setToken] = useState(localStorage.getItem("token"))
+
+  const updateToken = useCallback(
+    () => {
+      setToken(localStorage.getItem("token"))
+    },[token]
+  )
+  const value = {token,updateToken}
+
     return (
-      <Router>
-      <div className="App container">
-        <Route path = "/" exact component = {TodoList}>
-        </Route>
-        <Route path = "/login" component ={Login}>
-        </Route>
-      </div>
-      </Router>
+      <AuthContext.Provider value = {value}>
+        <TodoRouter/>
+      </AuthContext.Provider>
     )
   }
 
