@@ -1,25 +1,16 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 
 import './App.css';
-import React, { useCallback, useState }  from 'react'
+import React from 'react'
 import TodoRouter from './TodoRouter';
-import AuthContext from './AuthContext';
+import { AuthProvider } from './AuthContext';
 
-const App = () =>{
-  const [token ,setToken] = useState(localStorage.getItem("token"))
-
-  const updateToken = useCallback(
-    () => {
-      setToken(localStorage.getItem("token"))
-    },[token]
+const App = () => {
+  return (
+    <AuthProvider>
+      <TodoRouter />
+    </AuthProvider>
   )
-  const value = {token,updateToken}
-
-    return (
-      <AuthContext.Provider value = {value}>
-        <TodoRouter/>
-      </AuthContext.Provider>
-    )
-  }
+}
 
 export default App;

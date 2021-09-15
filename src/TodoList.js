@@ -2,37 +2,31 @@
 /* eslint-disable react-hooks/rules-of-hooks */
 import React, { useState, useEffect, useCallback, useMemo, useContext } from 'react'
 import ShowForm from './ShowForm'
-import TodoApi from './api/TodoApi'
 import { useHistory } from 'react-router'
-import AuthContext from './AuthContext'
+import { AuthContext } from './AuthContext'
+import format from './utils/formatItems'
+import { useCreateItem, useDeleteItem, useUpdataItem, useGetTodoList } from './hooks'
 
- function formatItems(items) {
-    return items.map(item => {
-      const date = {
-        ...item,
-        created_at: item.created_at.split("T", 1),
-        updated_at: item.updated_at.split("T", 1)
-      }
-      return date
-    })
- }
-
-const list = () => {
+const TodoList = () => {
   const history = useHistory()
-  const [arr, setArr] = useState([])
+  const [items, setItems] = useState([])
   const [item, setItem] = useState(undefined)
   const [search, setSearch] = useState('')
   const [itemInput, setItemInput] = useState(undefined)
-  const {updateToken,token} = useContext(AuthContext)
+  const { updateToken } = useContext(AuthContext)
+  const { createItem } = useCreateItem()
+  const { deleteItem } = useDeleteItem()
+  const { updataItem } = useUpdataItem()
+  const { getTodoList } = useGetTodoList()
 
   useEffect(() => {
     const fetchApi = async () => {
-      const data = await TodoApi.getAll(token)
+      const data = await getTodoList()
       try {
         if (data.message) {
           alert(data.message)
         } else {
-          setArr(data.items)
+          setItems(data.items)
         }
       } catch {
         alert(data.error)
@@ -47,20 +41,20 @@ const list = () => {
       // nếu tồn tại itemInput thì call Api update
       // nếu ko có itemInput thì call Api create
       if (itemInput) {
-        item = await TodoApi.update(itemInput.id, itemInput.content,token)
+        item = await updataItem(itemInput.id, itemInput.content)
         if (item.id) {
-          const newRecords = arr.map((record) => {
+          const newRecords = items.map((record) => {
             if (record.id === item.id) {
               record = { ...record, ...item }
             }
             return record
           })
-          setArr(newRecords)
+          setItems(newRecords)
         }
       } else {
-        item = await TodoApi.create(data,token)
+        item = await createItem({ data })
         if (item.id) {
-          setArr([item, ...arr])
+          setItems([item, ...items])
         }
       }
 
@@ -84,22 +78,23 @@ const list = () => {
     [item]
   )
 
-  const deleteItem = useCallback(
+  const removeItem = useCallback(
     async (id) => {
       try {
-        const arr = await TodoApi.delete(id,token)
-        console.log(arr)
-      } catch {
-        let index = arr.findIndex(i => i.id === id)
-        arr.splice(index, 1)
-        setArr([...arr])
+        const item = await deleteItem(id)
+        console.log("item: ", item)
+      } catch (err) {
+        console.log(err)
+        let index = items.findIndex(i => i.id === id)
+        items.splice(index, 1)
+        setItems([...items])
       }
-    },[arr])
+    }, [items])
 
   const handleCreate = useCallback(
     (item) => {
       setItem(item)
-    },[])
+    }, [])
 
   const handleLogOut = useCallback(() => {
     localStorage.removeItem("token")
@@ -110,27 +105,27 @@ const list = () => {
   const handleSearch = useCallback(
     (event) => {
       setSearch(event.target.value)
-    },[])
+    }, [])
 
   const updateInput = useCallback(
     (e) => {
       setItemInput({ ...itemInput, content: e.target.value })
-    },[])
+    }, [itemInput])
 
   const todoItems = useMemo(() => {
     if (search.length === 0) {
-      if (arr) {
-        return formatItems(arr)
+      if (items) {
+        return format(items)
       }
     } else {
       // tìm kiếm theo key Search
-      const filtersItem = arr.filter(item => {
+      const filtersItem = items.filter(item => {
         return item.content.toLowerCase().includes(search.toLowerCase())
       });
       // format ngày của mảng sau khi tìm kiếm
-      return formatItems(filtersItem)
+      return format(filtersItem)
     }
-  }, [arr, search])
+  }, [items, search])
 
   return (
     <div className="row">
@@ -174,7 +169,7 @@ const list = () => {
                     <button className="btn btn-warning" onClick={() => setItemInput(item)}>
                       Edit
                     </button>
-                    <button className="btn btn-primary" onClick={() => (deleteItem(item.id))}>
+                    <button className="btn btn-primary" onClick={() => (removeItem(item.id))}>
                       Delete
                     </button>
                   </td>
@@ -189,4 +184,4 @@ const list = () => {
   )
 }
 
-export default list
+export default TodoList

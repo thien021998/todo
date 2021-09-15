@@ -1,20 +1,34 @@
-import React, { useContext } from 'react'
-import { BrowserRouter as Router, Route, Redirect } from 'react-router-dom'
-import AuthContext from './AuthContext'
-import TodoList from './TodoList'
-import Login from './login'
+import React, { lazy, useContext, Suspense } from 'react'
+import { BrowserRouter as Router, Switch } from 'react-router-dom'
+import { AuthContext } from './AuthContext'
+import PrivateRoute from './routes/PrivateRoute'
+import PublicRoute from './routes/PublicRoute'
+
+const TodoList = lazy(() => import('./TodoList'))
+const Login = lazy(() => import('./login'))
 
 const TodoRouter = () => {
-  const {token} = useContext(AuthContext)
+  const { token } = useContext(AuthContext)
 
   return (
     <Router>
       <div className="App container">
-        <Route exact path="/">
-          {token === null ? <Redirect to="/login" /> : <TodoList />}
-        </Route>
-        <Route path="/login" component={Login}>
-        </Route>
+        <Suspense fallback={<div>Loading ...</div>}>
+          <Switch>
+            <PublicRoute
+              path='/login'
+              isAuthenticated={token}
+            >
+              <Login />
+            </PublicRoute>
+            <PrivateRoute
+              path='/'
+              isAuthenticated={token}
+            >
+              <TodoList />
+            </PrivateRoute>
+          </Switch>
+        </Suspense>
       </div>
     </Router>
   )
