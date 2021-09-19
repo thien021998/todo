@@ -2,8 +2,8 @@
 
 import './App.css';
 import React from 'react'
-import TodoRouter from './TodoRouter';
-import { AuthProvider } from './AuthContext';
+import TodoRouter from './routes/TodoRouter';
+import { AuthProvider } from './components/contexts/AuthContext';
 
 const App = () => {
   return (

@@ -1,11 +1,12 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import { useCallback, useContext } from 'react';
-import { AuthContext } from '../AuthContext'
+import { useCallback, useContext, useState } from 'react';
+import { AuthContext } from '../components/contexts/AuthContext'
 
 const useCreateItem = () => {
   const { token } = useContext(AuthContext)
-
+  const [loadingCreate, setLoadingCreate] = useState(null)
   const createItem = useCallback(async ({ data }) => {
+    setLoadingCreate('loading...')
     const response = await fetch('https://todo-mvc-api-typeorm.herokuapp.com/api/todos', {
       method: 'POST',
       headers: {
@@ -14,11 +15,11 @@ const useCreateItem = () => {
       },
       body: JSON.stringify(data)
     })
-
+    setLoadingCreate(false)
     return response.json()
   }, [token])
 
-  return { createItem }
+  return { createItem, loadingCreate }
 };
 
 export default useCreateItem;

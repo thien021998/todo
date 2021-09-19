@@ -1,10 +1,11 @@
-import { useCallback, useContext } from 'react';
-import { AuthContext } from '../AuthContext'
+import { useCallback, useContext, useState } from 'react';
+import { AuthContext } from '../components/contexts/AuthContext'
 
 const useUpdataItem = () => {
   const { token } = useContext(AuthContext)
-
+  const [loadingUpdate, setLoadingUpdate] = useState(null)
   const updataItem = useCallback(async (id, data) => {
+    setLoadingUpdate('Loading...')
     let item = {
       content: data
     }
@@ -16,11 +17,11 @@ const useUpdataItem = () => {
       },
       body: JSON.stringify(item)
     })
-
+    setLoadingUpdate(false)
     return response.json()
   }, [token]);
 
-  return { updataItem }
+  return { updataItem, loadingUpdate }
 };
 
 export default useUpdataItem;

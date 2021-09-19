@@ -1,11 +1,11 @@
 import React, { lazy, useContext, Suspense } from 'react'
 import { BrowserRouter as Router, Switch } from 'react-router-dom'
-import { AuthContext } from './AuthContext'
-import PrivateRoute from './routes/PrivateRoute'
-import PublicRoute from './routes/PublicRoute'
+import { AuthContext } from '../components/contexts/AuthContext'
+import PrivateRoute from './PrivateRoute'
+import PublicRoute from './PublicRoute'
 
-const TodoList = lazy(() => import('./TodoList'))
-const Login = lazy(() => import('./login'))
+const TodoList = lazy(() => import('../components/todo/TodoList'))
+const Login = lazy(() => import('../components/login'))
 
 const TodoRouter = () => {
   const { token } = useContext(AuthContext)

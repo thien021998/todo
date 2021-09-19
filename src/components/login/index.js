@@ -1,17 +1,18 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import React, { useCallback, useContext, useState } from 'react';
 import { useHistory } from 'react-router';
-import {AuthContext} from '../AuthContext';
-import { useLogin, useRegister } from '../hooks';
+import {AuthContext} from '../contexts/AuthContext';
+import { useLogin, useRegister } from 'hooks';
 import './style.css'
-
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 const Login = () => {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const history = useHistory()
   const {updateToken} = useContext(AuthContext)
-  const {login} = useLogin()
-  const {register} = useRegister()
+  const {login, loadingLogin} = useLogin()
+  const {register, LoadingRegis} = useRegister()
 
   const signUP = useCallback(
     async () => {
@@ -22,13 +23,13 @@ const Login = () => {
         const res = await register(data)
         console.log(res)
         if (res.id) {
-          alert("Đăng ký thành công! Hãy nhấn đăng nhập")
+          toast.success("Đăng ký thành công! Hãy nhấn đăng nhập")
         } else {
-          alert(res.message)
+          toast.warning(res.message)
         }
       }
       catch {
-        alert("Đăng ký thất bại")
+        toast.error("Đăng ký thất bại")
       }
     }, [username, password])
 
@@ -45,10 +46,10 @@ const Login = () => {
           updateToken()
           history.push('/');
         } else {
-          alert(res.message)
+          toast.warning(res.message)
         }
       } catch {
-        alert("Đăng nhập thất bại !")
+        toast.error("Đăng nhập thất bại !")
       }
     }, [username, password])
 
@@ -73,8 +74,9 @@ const Login = () => {
           <input name="password" type="password" className="form-control" value={password} onChange={handleChange} />
         </div>
       </div>
-      <button type="submit" className="btn btn-info align" onClick={signUP}><b>Sign up</b></button>
-      <button type="submit" className="btn btn-primary align" onClick={logIn}><b>Log In</b></button>
+      <button type="submit" className="btn btn-info align" onClick={signUP}><b>{LoadingRegis ? LoadingRegis : 'Sigup'}</b></button>
+      <button type="submit" className="btn btn-primary align" onClick={logIn}><b>{loadingLogin ? loadingLogin : 'Login'}</b></button>
+      <ToastContainer position="top-center" autoClose={2000} />
     </div>
   );
 }
