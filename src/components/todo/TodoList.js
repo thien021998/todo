@@ -67,7 +67,7 @@ const TodoList = () => {
         handleCancel()
       }
     },
-    [item, itemInput]
+    [createItem, updataItem]
   )
 
   const handleCancel = useCallback(
