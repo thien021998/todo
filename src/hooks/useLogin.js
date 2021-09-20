@@ -1,9 +1,9 @@
 import { useCallback, useState } from 'react';
 
 const useLogin = () => {
-  const [loadingLogin, setLoadingLogin] = useState(null)
+  const [loadingLogin, setLoadingLogin] = useState(false)
   const login = useCallback(async (data) => {
-    setLoadingLogin('Loading...')
+    setLoadingLogin(true)
     const response = await fetch('https://todo-mvc-api-typeorm.herokuapp.com/auth/login', {
       method: 'POST',
       headers: {

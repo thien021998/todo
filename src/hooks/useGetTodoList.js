@@ -3,9 +3,9 @@ import { AuthContext } from '../components/contexts/AuthContext'
 
 const useGetTodoList = () => {
   const { token } = useContext(AuthContext)
-  const [loading, setLoading] = useState(null)
+  const [loading, setLoading] = useState(false)
   const getTodoList = useCallback(async () => {
-    setLoading('Loading list items ...')
+    setLoading(true)
     const response = await fetch('https://todo-mvc-api-typeorm.herokuapp.com/api/todos', {
       method: 'GET',
       headers: {

@@ -4,9 +4,9 @@ import { AuthContext } from '../components/contexts/AuthContext'
 
 const useCreateItem = () => {
   const { token } = useContext(AuthContext)
-  const [loadingCreate, setLoadingCreate] = useState(null)
+  const [loadingCreate, setLoadingCreate] = useState(false)
   const createItem = useCallback(async ({ data }) => {
-    setLoadingCreate('loading...')
+    setLoadingCreate(true)
     const response = await fetch('https://todo-mvc-api-typeorm.herokuapp.com/api/todos', {
       method: 'POST',
       headers: {

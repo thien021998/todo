@@ -3,8 +3,8 @@ import useCreateItem from "./useCreateItem";
 import useDeleteItem from "./useDeleteItem";
 import useGetTodoList from "./useGetTodoList";
 import useLogin from "./useLogin";
-import useRegister from "./useRegister";
-import useUpdataItem from "./useUpdataItem";
+import useSignup from "./useRegister";
+import useUpdateItem from "./useUpdataItem";
 
 
-export {useCreateItem, useDeleteItem, useGetTodoList, useLogin, useRegister, useUpdataItem}
+export {useCreateItem, useDeleteItem, useGetTodoList, useLogin, useSignup, useUpdateItem}

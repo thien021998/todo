@@ -5,9 +5,8 @@ import ShowForm from './ShowForm'
 import { useHistory } from 'react-router'
 import { AuthContext } from '../contexts/AuthContext'
 import format from 'utils/formatItems'
-import { useCreateItem, useDeleteItem, useUpdataItem, useGetTodoList } from 'hooks'
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import { useCreateItem, useDeleteItem, useUpdateItem, useGetTodoList } from 'hooks'
+import { toast } from 'react-toastify';
 
 const TodoList = () => {
   const history = useHistory()
@@ -19,7 +18,7 @@ const TodoList = () => {
   const { updateToken, token } = useContext(AuthContext)
   const { createItem, loadingCreate } = useCreateItem()
   const { deleteItem, loadingDelete } = useDeleteItem()
-  const { updataItem, loadingUpdate } = useUpdataItem()
+  const { updateItem, loadingUpdate } = useUpdateItem()
   const { getTodoList, loading } = useGetTodoList()
 
   useEffect(() => {
@@ -36,7 +35,7 @@ const TodoList = () => {
       }
     }
     fetchApi()
-  }, [getTodoList]);
+  }, []);
 
   const handleSave = useCallback(
     async (data) => {
@@ -44,7 +43,7 @@ const TodoList = () => {
       // nếu tồn tại itemInput thì call Api update
       // nếu ko có itemInput thì call Api create
       if (itemInput) {
-        item = await updataItem(itemInput.id, itemInput.content)
+        item = await updateItem(itemInput.id, itemInput.content)
         if (item.id) {
           const newRecords = items.map((record) => {
             if (record.id === item.id) {
@@ -67,7 +66,7 @@ const TodoList = () => {
         handleCancel()
       }
     },
-    [createItem, updataItem]
+    [item, itemInput]
   )
 
   const handleCancel = useCallback(
@@ -131,11 +130,10 @@ const TodoList = () => {
       return format(filtersItem)
     }
   }, [items, search])
-
   return (
     <div className="row">
       <button className="btn btn-warning btn-login" onClick={handleLogOut}>logout</button>
-      <h2 className="title">Render Form Todo-List with Reactjs</h2>
+      <h2 className="title">Render Form Todo-List with Reacts</h2>
       <button className="btn btn-primary btn-create" onClick={() => handleCreate({})}>Create</button>
       {!!item && <ShowForm item={item} handleCancel={handleCancel} handleSave={handleSave} loadingCreate={loadingCreate} />}
       <div className="ui search">
@@ -144,20 +142,27 @@ const TodoList = () => {
           <button className="btn-search" type="submit"><i className="fa fa-search"></i></button>
         </div>
       </div>
-      {loading ? loading :
-        <>
-          <div className="table-wrapper">
-            <table className="table table-bordered">
-              <thead>
+      <div className="table-wrapper">
+        <table className="table table-bordered">
+          <thead>
+            <tr>
+              <th>Index</th>
+              <th>Content</th>
+              <th>Status</th>
+              <th>Create-date</th>
+              <th>Update-date</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          {loading ?
+            <>
+              <tbody>
                 <tr>
-                  <th>Index</th>
-                  <th>Content</th>
-                  <th>Status</th>
-                  <th>Create-date</th>
-                  <th>Update-date</th>
-                  <th>Action</th>
+                  <td colSpan="6">Loading items....</td>
                 </tr>
-              </thead>
+              </tbody>
+            </> :
+            <>
               <tbody>
                 {todoItems.map((item) => {
                   return (
@@ -166,7 +171,7 @@ const TodoList = () => {
                       <td onDoubleClick={() => setItemInput(item)}>{itemInput && itemInput.id === item.id ?
                         <>
                           <input type="text" value={itemInput.content} onChange={updateInput} />
-                          <button onClick={handleSave}>{loadingUpdate ? loadingUpdate : 'Save'}</button>
+                          <button className="btn-primary" onClick={handleSave}>{loadingUpdate ? "Loading...." : 'Save'}</button>
                         </> : item.content
                       }</td>
                       <td>{item.status}</td>
@@ -177,19 +182,18 @@ const TodoList = () => {
                           Edit
                         </button>
                         <button className="btn btn-primary" onClick={() => (removeItem(item.id))}>
-                          {loadingDelete && remove && remove === item.id ? loadingDelete : 'Delete'}
+                          {loadingDelete && remove && remove === item.id ? "Loading..." : 'Delete'}
                         </button>
                       </td>
                     </tr>
                   )
                 })}
               </tbody>
-            </table>
-            <div>{todoItems.length === 0 && "Không tìm thấy item hợp lệ"}</div>
-          </div>
-        </>
-      }
-      <ToastContainer position="top-center" autoClose={2000} />
+            </>
+          }
+        </table>
+        <div>{todoItems.length === 0 && "Không tìm thấy item hợp lệ"}</div>
+      </div>
     </div>
   )
 }
