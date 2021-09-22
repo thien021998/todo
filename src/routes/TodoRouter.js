@@ -4,9 +4,13 @@ import { AuthContext } from '../components/contexts/AuthContext'
 import PrivateRoute from './PrivateRoute'
 import PublicRoute from './PublicRoute'
 
-const TodoList = lazy(() => import('../components/todo/TodoList'))
-const Login = lazy(() => import('../components/login'))
+//Without Redux
+// const TodoList = lazy(() => import('../components/todo/TodoList'))
+// const Login = lazy(() => import('../components/login'))
 
+//With Redux
+const TodoListRedux = lazy(() => import('../components/todo/TodoListRedux'))
+const LoginRedux = lazy(() => import('../components/login/LoginRedux'))
 const TodoRouter = () => {
   const { token } = useContext(AuthContext)
 
@@ -19,13 +23,13 @@ const TodoRouter = () => {
               path='/login'
               isAuthenticated={token}
             >
-              <Login />
+              <LoginRedux />
             </PublicRoute>
             <PrivateRoute
               path='/'
               isAuthenticated={token}
             >
-              <TodoList />
+              <TodoListRedux />
             </PrivateRoute>
           </Switch>
         </Suspense>

@@ -24,7 +24,7 @@ const ShowForm = (props) => {
           <label className="form-label text-start d-block" htmlFor="fname">Content:</label><br />
           <input className="form-control" type="text" id="fname" name="content" value={content} onChange={handleChange} /><br />
         </form>
-        <button className="btn btn-secondary" onClick={handleOnSave}>{props.loadingCreate ? "Loading..." : 'Submit'}</button>
+        <button className="btn btn-secondary" onClick={handleOnSave}>{props.loading ? "Loading..." : 'Submit'}</button>
         <button className="btn btn-primary mx-2" onClick={props.handleCancel}>Cancel</button>
       </div>
     </div>

@@ -5,66 +5,60 @@ import ShowForm from './ShowForm'
 import { useHistory } from 'react-router'
 import { AuthContext } from '../contexts/AuthContext'
 import format from 'utils/formatItems'
-import { useCreateItem, useDeleteItem, useUpdateItem, useGetTodoList } from 'hooks'
-import { toast } from 'react-toastify';
-
-const TodoList = () => {
+import { useDispatch, useSelector } from 'react-redux'
+import { getTodo, deleteTodo, updateTodo, addTodo } from '../redux/todoSlice'
+import { toast } from 'react-toastify'
+import { unwrapResult } from '@reduxjs/toolkit'
+const TodoListRedux = () => {
   const history = useHistory()
-  const [items, setItems] = useState([])
   const [item, setItem] = useState(undefined)
-  const [remove, setRemove] = useState(undefined)
   const [search, setSearch] = useState('')
   const [itemInput, setItemInput] = useState(undefined)
   const { updateToken, token } = useContext(AuthContext)
-  const { createItem, loadingCreate } = useCreateItem()
-  const { deleteItem, loadingDelete } = useDeleteItem()
-  const { updateItem, loadingUpdate } = useUpdateItem()
-  const { getTodoList, loading } = useGetTodoList()
+  const dispatch = useDispatch()
+  const todos = useSelector((state) => state.todos)
 
-  useEffect(() => {
-    const fetchApi = async () => {
-      const data = await getTodoList()
-      try {
-        if (data.message) {
-          toast.warning(data.message)
-        } else {
-          setItems(data.items)
-        }
-      } catch {
-        toast.error(data.error)
+  useEffect(async () => {
+    try {
+      const actionResult = await dispatch(getTodo());
+      const currentTodos = unwrapResult(actionResult);
+      if (currentTodos.todos.message) {
+        toast.warning(currentTodos.todos.message)
       }
     }
-    fetchApi()
-  }, []);
+    catch (err) {
+      toast.error(err.message)
+    }
+  }, [dispatch]);
 
   const handleSave = useCallback(
     async (data) => {
-      let item
-      // nếu tồn tại itemInput thì call Api update
-      // nếu ko có itemInput thì call Api create
+      let actionResult
       if (itemInput) {
-        item = await updateItem(itemInput.id, itemInput.content)
-        if (item.id) {
-          const newRecords = items.map((record) => {
-            if (record.id === item.id) {
-              record = { ...record, ...item }
-            }
-            return record
-          })
-          setItems(newRecords)
+        try {
+          actionResult = await dispatch(updateTodo(itemInput));
+          const currentUpdate = unwrapResult(actionResult);
+          if (currentUpdate.todo.message) {
+            toast.warning(currentUpdate.todos.message)
+          }
+        }
+        catch (err) {
+          toast.error(err.message)
         }
       } else {
-        item = await createItem({ data })
-        if (item.id) {
-          setItems([item, ...items])
+        try {
+          actionResult = await dispatch(addTodo(data));
+          const currentAdd = unwrapResult(actionResult);
+          if (currentAdd.todo.message) {
+            toast.warning(currentAdd.todos.message)
+          }
+        }
+        catch (err) {
+          toast.error(err.message)
         }
       }
+      handleCancel()
 
-      if (item.message) {
-        toast.warning(item.message)
-      } else {
-        handleCancel()
-      }
     },
     [item, itemInput]
   )
@@ -81,19 +75,9 @@ const TodoList = () => {
   )
 
   const removeItem = useCallback(
-    async (id) => {
-      try {
-        setRemove(id)
-        const item = await deleteItem(id)
-        console.log("item: ", item)
-      } catch (err) {
-        console.log(err)
-        let index = items.findIndex(i => i.id === id)
-        items.splice(index, 1)
-        setItems([...items])
-      }
-      setRemove(undefined)
-    }, [items])
+    (id) => {
+      dispatch(deleteTodo({ id }))
+    }, [dispatch])
 
   const handleCreate = useCallback(
     (item) => {
@@ -109,6 +93,7 @@ const TodoList = () => {
   const handleSearch = useCallback(
     (event) => {
       setSearch(event.target.value)
+      // dispatch(searchTodo(event.target.value))
     }, [search])
 
   const updateInput = useCallback(
@@ -118,24 +103,25 @@ const TodoList = () => {
 
   const todoItems = useMemo(() => {
     if (search.length === 0) {
-      if (items) {
-        return format(items)
+      if (todos) {
+        return format(todos?.todo)
       }
     } else {
       // tìm kiếm theo key Search
-      const filtersItem = items.filter(item => {
+      const filtersItem = todos.todo.filter(item => {
         return item.content.toLowerCase().includes(search.toLowerCase())
       });
       // format ngày của mảng sau khi tìm kiếm
       return format(filtersItem)
     }
-  }, [items, search])
+  }, [todos, search])
+
   return (
     <div className="row">
       <button className="btn btn-warning btn-login" onClick={handleLogOut}>logout</button>
       <h2 className="title">Render Form Todo-List with Reacts</h2>
       <button className="btn btn-primary btn-create" onClick={() => handleCreate({})}>Create</button>
-      {!!item && <ShowForm item={item} handleCancel={handleCancel} handleSave={handleSave} loading={loadingCreate} />}
+      {!!item && <ShowForm item={item} handleCancel={handleCancel} handleSave={handleSave} loading={todos.loading} />}
       <div className="ui search">
         <div className="ui icon input">
           <input name="search" type="text" placeholder="Search Content" className="input-search" value={search} onChange={handleSearch} />
@@ -154,7 +140,7 @@ const TodoList = () => {
               <th>Action</th>
             </tr>
           </thead>
-          {loading ?
+          {todos.loading ?
             <>
               <tbody>
                 <tr>
@@ -164,14 +150,14 @@ const TodoList = () => {
             </> :
             <>
               <tbody>
-                {todoItems.map((item) => {
+                {todoItems.map((item, index) => {
                   return (
-                    <tr key={item.id}>
+                    <tr key={index}>
                       <td>{item.id}</td>
                       <td onDoubleClick={() => setItemInput(item)}>{itemInput && itemInput.id === item.id ?
                         <>
                           <input type="text" value={itemInput.content} onChange={updateInput} />
-                          <button className="btn-primary" onClick={handleSave}>{loadingUpdate ? "Loading...." : 'Save'}</button>
+                          <button className="btn-primary" onClick={handleSave}>{todos.loading ? 'Loading...' : 'Save'}</button>
                         </> : item.content
                       }</td>
                       <td>{item.status}</td>
@@ -182,7 +168,7 @@ const TodoList = () => {
                           Edit
                         </button>
                         <button className="btn btn-primary" onClick={() => (removeItem(item.id))}>
-                          {loadingDelete && remove && remove === item.id ? "Loading..." : 'Delete'}
+                          {todos.loading ? 'Loading...' : 'Delete'}
                         </button>
                       </td>
                     </tr>
@@ -198,4 +184,4 @@ const TodoList = () => {
   )
 }
 
-export default TodoList
+export default TodoListRedux
