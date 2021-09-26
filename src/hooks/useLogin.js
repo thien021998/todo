@@ -1,7 +1,7 @@
 import { useCallback, useState } from 'react';
 
 const useLogin = () => {
-  const [loadingLogin, setLoadingLogin] = useState(false)
+  const [loading, setLoadingLogin] = useState(false)
   const login = useCallback(async (data) => {
     setLoadingLogin(true)
     const response = await fetch('https://todo-mvc-api-typeorm.herokuapp.com/auth/login', {
@@ -15,7 +15,7 @@ const useLogin = () => {
     return response.json()
   }, []);
 
-  return { login, loadingLogin }
+  return { login, loading }
 };
 
 export default useLogin;

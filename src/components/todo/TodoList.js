@@ -15,11 +15,11 @@ const TodoList = () => {
   const [remove, setRemove] = useState(undefined)
   const [search, setSearch] = useState('')
   const [itemInput, setItemInput] = useState(undefined)
-  const { updateToken, token } = useContext(AuthContext)
-  const { createItem, loadingCreate } = useCreateItem()
-  const { deleteItem, loadingDelete } = useDeleteItem()
-  const { updateItem, loadingUpdate } = useUpdateItem()
-  const { getTodoList, loading } = useGetTodoList()
+  const { updateToken } = useContext(AuthContext)
+  const { createItem, loading: isCreating } = useCreateItem()
+  const { deleteItem, loading: isDeleting } = useDeleteItem()
+  const { updateItem, loading: isUpdating } = useUpdateItem()
+  const { getTodoList, loading: isGetTodoList } = useGetTodoList()
 
   useEffect(() => {
     const fetchApi = async () => {
@@ -65,9 +65,7 @@ const TodoList = () => {
       } else {
         handleCancel()
       }
-    },
-    [item, itemInput]
-  )
+    }, [item, itemInput])
 
   const handleCancel = useCallback(
     () => {
@@ -76,9 +74,7 @@ const TodoList = () => {
       } else {
         setItemInput(undefined)
       }
-    },
-    [item]
-  )
+    }, [item])
 
   const removeItem = useCallback(
     async (id) => {
@@ -104,7 +100,7 @@ const TodoList = () => {
     localStorage.removeItem("token")
     updateToken()
     history.push("/login")
-  }, [token])
+  }, [])
 
   const handleSearch = useCallback(
     (event) => {
@@ -130,12 +126,13 @@ const TodoList = () => {
       return format(filtersItem)
     }
   }, [items, search])
+
   return (
     <div className="row">
       <button className="btn btn-warning btn-login" onClick={handleLogOut}>logout</button>
       <h2 className="title">Render Form Todo-List with Reacts</h2>
       <button className="btn btn-primary btn-create" onClick={() => handleCreate({})}>Create</button>
-      {!!item && <ShowForm item={item} handleCancel={handleCancel} handleSave={handleSave} loading={loadingCreate} />}
+      {!!item && <ShowForm item={item} handleCancel={handleCancel} handleSave={handleSave} loading={isCreating} />}
       <div className="ui search">
         <div className="ui icon input">
           <input name="search" type="text" placeholder="Search Content" className="input-search" value={search} onChange={handleSearch} />
@@ -154,7 +151,7 @@ const TodoList = () => {
               <th>Action</th>
             </tr>
           </thead>
-          {loading ?
+          {isGetTodoList ?
             <>
               <tbody>
                 <tr>
@@ -171,7 +168,7 @@ const TodoList = () => {
                       <td onDoubleClick={() => setItemInput(item)}>{itemInput && itemInput.id === item.id ?
                         <>
                           <input type="text" value={itemInput.content} onChange={updateInput} />
-                          <button className="btn-primary" onClick={handleSave}>{loadingUpdate ? "Loading...." : 'Save'}</button>
+                          <button className="btn-primary" onClick={handleSave}>{isUpdating ? "Loading...." : 'Save'}</button>
                         </> : item.content
                       }</td>
                       <td>{item.status}</td>
@@ -182,7 +179,7 @@ const TodoList = () => {
                           Edit
                         </button>
                         <button className="btn btn-primary" onClick={() => (removeItem(item.id))}>
-                          {loadingDelete && remove && remove === item.id ? "Loading..." : 'Delete'}
+                          {isDeleting && remove && remove === item.id ? "Loading..." : 'Delete'}
                         </button>
                       </td>
                     </tr>

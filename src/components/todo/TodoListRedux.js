@@ -6,21 +6,22 @@ import { useHistory } from 'react-router'
 import { AuthContext } from '../contexts/AuthContext'
 import format from 'utils/formatItems'
 import { useDispatch, useSelector } from 'react-redux'
-import { getTodo, deleteTodo, updateTodo, addTodo } from '../redux/todoSlice'
+import { getTodoItems, deleteTodo, updateTodo, addTodo } from 'redux/todoSlice'
 import { toast } from 'react-toastify'
 import { unwrapResult } from '@reduxjs/toolkit'
+
 const TodoListRedux = () => {
   const history = useHistory()
   const [item, setItem] = useState(undefined)
   const [search, setSearch] = useState('')
   const [itemInput, setItemInput] = useState(undefined)
-  const { updateToken, token } = useContext(AuthContext)
+  const { updateToken } = useContext(AuthContext)
   const dispatch = useDispatch()
   const todos = useSelector((state) => state.todos)
 
   useEffect(async () => {
     try {
-      const actionResult = await dispatch(getTodo());
+      const actionResult = await dispatch(getTodoItems());
       const currentTodos = unwrapResult(actionResult);
       if (currentTodos.todos.message) {
         toast.warning(currentTodos.todos.message)
@@ -39,7 +40,7 @@ const TodoListRedux = () => {
           actionResult = await dispatch(updateTodo(itemInput));
           const currentUpdate = unwrapResult(actionResult);
           if (currentUpdate.todo.message) {
-            toast.warning(currentUpdate.todos.message)
+            toast.warning(currentUpdate.todo.message)
           }
         }
         catch (err) {
@@ -50,7 +51,7 @@ const TodoListRedux = () => {
           actionResult = await dispatch(addTodo(data));
           const currentAdd = unwrapResult(actionResult);
           if (currentAdd.todo.message) {
-            toast.warning(currentAdd.todos.message)
+            toast.warning(currentAdd.todo.message)
           }
         }
         catch (err) {
@@ -59,9 +60,7 @@ const TodoListRedux = () => {
       }
       handleCancel()
 
-    },
-    [item, itemInput]
-  )
+    }, [item, itemInput])
 
   const handleCancel = useCallback(
     () => {
@@ -70,9 +69,7 @@ const TodoListRedux = () => {
       } else {
         setItemInput(undefined)
       }
-    },
-    [item]
-  )
+    }, [item])
 
   const removeItem = useCallback(
     (id) => {
@@ -88,7 +85,7 @@ const TodoListRedux = () => {
     localStorage.removeItem("token")
     updateToken()
     history.push("/login")
-  }, [token])
+    }, [])
 
   const handleSearch = useCallback(
     (event) => {
@@ -104,11 +101,11 @@ const TodoListRedux = () => {
   const todoItems = useMemo(() => {
     if (search.length === 0) {
       if (todos) {
-        return format(todos?.todo)
+        return format(todos?.todoItems)
       }
     } else {
       // tìm kiếm theo key Search
-      const filtersItem = todos.todo.filter(item => {
+      const filtersItem = todos.todoItems.filter(item => {
         return item.content.toLowerCase().includes(search.toLowerCase())
       });
       // format ngày của mảng sau khi tìm kiếm

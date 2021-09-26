@@ -5,16 +5,16 @@ import { useForm } from 'react-hook-form';
 import './style.css'
 import { toast } from 'react-toastify';
 import { useDispatch, useSelector } from 'react-redux'
-import {login,signup} from '../redux/userSlice'
+import {login,signup} from 'redux/userSlice'
 import { unwrapResult } from '@reduxjs/toolkit'
 import { AuthContext } from '../contexts/AuthContext';
 
 const LoginRedux = () => {
   const history = useHistory()
   const { updateToken } = useContext(AuthContext)
-  const { register, handleSubmit } = useForm()
+  const { register, handleSubmit, formState: { errors } } = useForm()
   const dispatch = useDispatch()
-  const user = useSelector(state=>state.user)
+  const userState  = useSelector(state=>state.user)
 
   const onSubmit = useCallback(
     async (data) => {
@@ -44,7 +44,7 @@ const LoginRedux = () => {
           if (currentUser.data.id) {
             toast.success("Đăng ký thành công! Hãy nhấn đăng nhập")
           } else {
-            user.loading = false
+            userState.loading = false
             toast.warning(currentUser.data.message)
           }
         }
@@ -59,15 +59,17 @@ const LoginRedux = () => {
       <div className="align">
         <form onSubmit={handleSubmit(onSubmit)}>
           <label className="form-label text-start d-block">Username :</label>
-          <input className="form-control" {...register("username")} placeholder="First name" />
+          <input className="form-control" {...register("username",{ required: true })} placeholder="First name" />
+          {errors.username && <p className="textError text-start">This field is required</p>}
           <label className="form-label  text-start d-block">Password :</label>
-          <input className="form-control" {...register("password")} placeholder="Last name" />
+          <input className="form-control" {...register("password", { required: true })} placeholder="Last name" />
+          {errors.password && <p className="textError text-start">This field is required</p>}
           <label className="form-label  text-start d-block">Trạng Thái</label>
           <select className="form-control" {...register("status")}>
             <option value="login">Login</option>
             <option value="register">Signup</option>
           </select>
-          <input className="btn btn-info align" type="submit" value={user.loading ? 'Loading...' : 'Submit'} />
+          <input className="btn btn-info align" type="submit" value={userState.loading ? 'Loading...' : 'Submit'} />
         </form>
       </div>
     </div>

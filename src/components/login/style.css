@@ -8,3 +8,12 @@
 .align{
   margin: 15px
 }
+
+.textError {
+  color: #bf1650;
+}
+
+.textError::before {
+  display: inline;
+  content: "⚠ ";
+}

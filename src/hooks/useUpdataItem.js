@@ -3,7 +3,7 @@ import { AuthContext } from '../components/contexts/AuthContext'
 
 const useUpdateItem = () => {
   const { token } = useContext(AuthContext)
-  const [loadingUpdate, setLoadingUpdate] = useState(false)
+  const [loading, setLoadingUpdate] = useState(false)
   const updateItem = useCallback(async (id, data) => {
     setLoadingUpdate(true)
     let item = {
@@ -21,7 +21,7 @@ const useUpdateItem = () => {
     return response.json()
   }, [token]);
 
-  return { updateItem, loadingUpdate }
+  return { updateItem, loading }
 };
 
 export default useUpdateItem;

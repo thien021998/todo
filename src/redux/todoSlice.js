@@ -3,8 +3,8 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 
 let token = localStorage.getItem("token")
 
-export const getTodo = createAsyncThunk(
-  'todo/getTodo',
+export const getTodoItems  = createAsyncThunk(
+  'todo/getTodoItems ',
   async () => {
     const response = await fetch('https://todo-mvc-api-typeorm.herokuapp.com/api/todos', {
       method: 'GET',
@@ -70,26 +70,26 @@ export const todoSlice = createSlice({
 
   initialState: {
     loading: false,
-    todo: []
+    todoItems : []
   },
 
   reducers: {
     searchTodo: (state, action) => {
       if (action.payload) {
-        return state.todo.filter(todo => todo.content.toLowerCase().includes(action.payload.toLowerCase()))
+        return state.todoItems.filter(todo => todo.content.toLowerCase().includes(action.payload.toLowerCase()))
       }
-      return state.todo
+      return state.todoItems
     }
   },
 
   extraReducers: {
-    [getTodo.pending]: (state, action) => {
+    [getTodoItems.pending]: (state, action) => {
       state.loading = true
     },
 
-    [getTodo.fulfilled]: (state, action) => {
+    [getTodoItems.fulfilled]: (state, action) => {
       if (action.payload.todos.items) {
-        state.todo = [...state.todo, ...action.payload.todos.items];
+        state.todoItems  =action.payload.todos.items;
       state.loading = false;
       } else {
         state.loading = false;
@@ -103,7 +103,7 @@ export const todoSlice = createSlice({
     [addTodo.fulfilled]: (state, action) => {
       if (action.payload.todo.id) {
         state.loading = false;
-        state.todo = [action.payload.todo, ...state.todo]
+        state.todoItems  = [action.payload.todo, ...state.todoItems ]
       } else {
         state.loading = false;
       }
@@ -116,7 +116,7 @@ export const todoSlice = createSlice({
     [updateTodo.fulfilled]: (state, action) => {
       if (action.payload.todo.id) {
         state.loading = false;
-      state.todo = state.todo.map(todo => {
+      state.todoItems  = state.todoItems.map(todo => {
         if (todo.id === action.payload.todo.id) {
           todo = { ...todo, ...action.payload.todo }
         }
@@ -133,7 +133,7 @@ export const todoSlice = createSlice({
 
     [deleteTodo.fulfilled]: (state, action) => {
       state.loading = false
-      state.todo = state.todo.filter(todo => todo.id !== action.payload.id)
+      state.todoItems  = state.todoItems.filter(todo => todo.id !== action.payload.id)
     },
   }
 })

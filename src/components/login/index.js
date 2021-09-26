@@ -10,8 +10,8 @@ import { toast } from 'react-toastify';
 const Login = () => {
   const history = useHistory()
   const { updateToken } = useContext(AuthContext)
-  const { login, loadingLogin } = useLogin()
-  const { signup, LoadingRegis } = useSignup()
+  const { login, loading : isLogging} = useLogin()
+  const { signup, Loading : isRegistering} = useSignup()
   const { register, handleSubmit } = useForm()
 
   const onSubmit = useCallback(
@@ -62,7 +62,7 @@ const Login = () => {
             <option value="login">Login</option>
             <option value="register">Signup</option>
           </select>
-          <input className="btn btn-info align" type="submit" value={LoadingRegis || loadingLogin ? 'Loading...' : 'Submit'} />
+          <input className="btn btn-info align" type="submit" value={isRegistering || isLogging ? 'Loading...' : 'Submit'} />
         </form>
       </div>
     </div>
